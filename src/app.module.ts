@@ -7,11 +7,7 @@ import { PlayersModule } from "./players/players.module";
 @Module({
   imports: [
     MongooseModule.forRoot(
-      "mongodb+srv://davi:170601da@cluster0.hocvo.mongodb.net/applayer?retryWrites=true&w=majority",
-      {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      }
+      "mongodb+srv://davi:170601da@cluster0.hocvo.mongodb.net/applayer?retryWrites=true&w=majority"
     ),
     PlayersModule,
   ],

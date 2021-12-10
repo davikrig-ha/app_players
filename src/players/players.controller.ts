@@ -1,7 +1,19 @@
-import { Body, Controller, Delete, Get, Post, Query, UsePipes, ValidationPipe } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UsePipes,
+  ValidationPipe,
+} from "@nestjs/common";
 import { CreatePlayerDto } from "./dtos/create-player.dto";
 import { PlayersService } from "./players.service";
 import { Player } from "./interfaces/player.interface";
+import { PlayersValidationPipe } from "./pipes/players-validation.pipe";
 
 @Controller("players")
 export class PlayersController {
@@ -9,23 +21,35 @@ export class PlayersController {
 
   @Post()
   @UsePipes(ValidationPipe)
-  async createUpdatePlayer(@Body() createPlayerDto: CreatePlayerDto) {
-    await this.playersService.createUpdatePlayer(createPlayerDto);
+  async createPlayer(@Body() createPlayerDto: CreatePlayerDto): Promise<Player>{
+   return await this.playersService.createdPlayer(createPlayerDto);
+  }
+
+  @Put("/:id")
+  @UsePipes(ValidationPipe)
+  async UpdatePlayer(
+    @Body() createPlayerDto: CreatePlayerDto,
+    @Param("id", PlayersValidationPipe) id: string
+  ): Promise<void> {
+    await this.playersService.UpdatePlayer(id, createPlayerDto);
   }
 
   @Get()
-  async consultPlayers(
-    @Query("email") email: string
-  ): Promise<Player[] | Player> {
-    if (email) {
-      return await this.playersService.consultPlayerToEmail(email);
-    } else {
-      return await this.playersService.consultAllPlayers();
-    }
+  async consultPlayers(): Promise<Player[]> {
+    return await this.playersService.consultAllPlayers();
   }
 
-  @Delete()
-  async deletePlayer(@Query("email") email: string): Promise<void> {
-    this.playersService.deletePlayer(email);
+  @Get("/:id")
+  async consultPlayersId(
+    @Param("id", PlayersValidationPipe) id: string
+  ): Promise<Player> {
+    return await this.playersService.consultPlayerId(id);
+  }
+
+  @Delete("/:id")
+  async deletePlayer(
+    @Param("id", PlayersValidationPipe) id: string
+  ): Promise<void> {
+    this.playersService.deletePlayer(id);
   }
 }
