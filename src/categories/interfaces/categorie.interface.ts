@@ -1,0 +1,18 @@
+import { Player } from "src/players/interfaces/player.interface";
+import { Document } from "mongoose";
+
+
+export interface Categorie extends Document {
+
+  readonly categorie: string;
+  description: string;
+  events: Array<Event>;
+  players: Array<Player>;
+}
+
+export interface Event {
+    name: string;
+    operation: string;
+    value: number;
+
+}
