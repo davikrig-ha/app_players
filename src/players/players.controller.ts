@@ -14,6 +14,7 @@ import { CreatePlayerDto } from "./dtos/create-player.dto";
 import { PlayersService } from "./players.service";
 import { Player } from "./interfaces/player.interface";
 import { PlayersValidationPipe } from "./pipes/players-validation.pipe";
+import { UpdatePlayerDto } from "./dtos/update-player.dto";
 
 @Controller("players")
 export class PlayersController {
@@ -28,10 +29,10 @@ export class PlayersController {
   @Put("/:id")
   @UsePipes(ValidationPipe)
   async UpdatePlayer(
-    @Body() createPlayerDto: CreatePlayerDto,
+    @Body() updatePlayerDto: UpdatePlayerDto,
     @Param("id", PlayersValidationPipe) id: string
   ): Promise<void> {
-    await this.playersService.UpdatePlayer(id, createPlayerDto);
+    await this.playersService.UpdatePlayer(id, updatePlayerDto);
   }
 
   @Get()
