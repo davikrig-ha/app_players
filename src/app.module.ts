@@ -1,13 +1,22 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { PlayersController } from './players/players.controller';
-import { PlayersModule } from './players/players.module';
-import { PlayersService } from './players/players.service';
+import { Module } from "@nestjs/common";
+import { MongooseModule } from "@nestjs/mongoose";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { PlayersModule } from "./players/players.module";
+
 
 @Module({
-  imports: [PlayersModule],
-  controllers: [AppController, PlayersController],
-  providers: [AppService, PlayersService],
+  imports: [
+    MongooseModule.forRoot(
+      "mongodb+srv://davi:170601da@cluster0.hocvo.mongodb.net/applayer?retryWrites=true&w=majority",
+      {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      }
+    ),
+    PlayersModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
