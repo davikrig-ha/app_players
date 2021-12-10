@@ -1,7 +1,6 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { CreatePlayerDto } from "./dtos/create-player.dto";
 import { Player } from "./interfaces/player.interface";
-import { v4 as uuidv4 } from "uuid";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 
@@ -10,7 +9,7 @@ export class PlayersService {
   private players: Player[] = [];
 
   constructor(
-    @InjectModel('Player') private readonly playerModel: Model<Player>
+    @InjectModel("Player") private readonly playerModel: Model<Player>
   ) {}
 
   private readonly logger = new Logger(PlayersService.name);
