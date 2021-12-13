@@ -46,6 +46,22 @@ export class CategoriesService {
     return findCategorie;
   }
 
+  async consultPlayerCategorie(idPlayer: any): Promise<Categorie> {
+    const players = await this.playersService.consultAllPlayers();
+
+    const playerFilter = players.filter((player) => player.id == idPlayer);
+
+    if (playerFilter.length == 0) {
+      throw new BadRequestException(`this id ${idPlayer} is not a player!`);
+    }
+
+    return await this.categorieModel
+      .findOne()
+      .where("players")
+      .in(idPlayer)
+      .exec();
+  }
+
   async updateCategorie(
     categorie: string,
     updateCategorieDto: UpdateCategorieDto
@@ -75,7 +91,13 @@ export class CategoriesService {
       .in(idPlayer)
       .exec();
 
-    await this.playersService.consultPlayerId(idPlayer);
+    const players = await this.playersService.consultAllPlayers();
+
+    const playerFilter = players.filter((player) => player.id == idPlayer);
+
+    if (playerFilter.length == 0) {
+      throw new BadRequestException(`this id ${idPlayer} is not a player!`);
+    }
 
     if (!findCategorie) {
       throw new BadRequestException(`Categorie ${categorie} not found!`);
