@@ -1,6 +1,5 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { GameSchema } from "src/challenge/interfaces/game.schema";
 import { PlayersModule } from "src/players/players.module";
 import { CategoriesController } from "./categories.controller";
 import { CategoriesService } from "./categories.service";
