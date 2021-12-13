@@ -4,14 +4,14 @@ import {
   PipeTransform,
 } from "@nestjs/common";
 
-export class PlayersValidationPipe implements PipeTransform {
+export class ValidateParameterPipe implements PipeTransform {
   transform(value: any, metadata: ArgumentMetadata) {
     if (!value) {
       throw new BadRequestException(
-        `O valor do parametro ${metadata.data} deve ser informado!`
+        `O valor do parametro ${metadata.data} deve ser informado`
       );
+      
     }
-
     return value;
   }
 }

@@ -13,7 +13,7 @@ import {
 import { CreatePlayerDto } from "./dtos/create-player.dto";
 import { PlayersService } from "./players.service";
 import { Player } from "./interfaces/player.interface";
-import { PlayersValidationPipe } from "./pipes/players-validation.pipe";
+import { ValidateParameterPipe } from "src/common/pipes/validate-parameter.pipe";
 import { UpdatePlayerDto } from "./dtos/update-player.dto";
 
 @Controller("players")
@@ -22,15 +22,17 @@ export class PlayersController {
 
   @Post()
   @UsePipes(ValidationPipe)
-  async createPlayer(@Body() createPlayerDto: CreatePlayerDto): Promise<Player>{
-   return await this.playersService.createdPlayer(createPlayerDto);
+  async createPlayer(
+    @Body() createPlayerDto: CreatePlayerDto
+  ): Promise<Player> {
+    return await this.playersService.createdPlayer(createPlayerDto);
   }
 
   @Put("/:id")
   @UsePipes(ValidationPipe)
   async UpdatePlayer(
     @Body() updatePlayerDto: UpdatePlayerDto,
-    @Param("id", PlayersValidationPipe) id: string
+    @Param("id", ValidateParameterPipe) id: string
   ): Promise<void> {
     await this.playersService.UpdatePlayer(id, updatePlayerDto);
   }
@@ -42,14 +44,14 @@ export class PlayersController {
 
   @Get("/:id")
   async consultPlayersId(
-    @Param("id", PlayersValidationPipe) id: string
+    @Param("id", ValidateParameterPipe) id: string
   ): Promise<Player> {
     return await this.playersService.consultPlayerId(id);
   }
 
   @Delete("/:id")
   async deletePlayer(
-    @Param("id", PlayersValidationPipe) id: string
+    @Param("id", ValidateParameterPipe) id: string
   ): Promise<void> {
     this.playersService.deletePlayer(id);
   }
