@@ -8,14 +8,11 @@ import { CategorieSchema } from "./interfaces/categorie.schema";
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: "Categorie", schema: CategorieSchema },
-      { name: "Game", schema: GameSchema },
-    ]),
+    MongooseModule.forFeature([{ name: "Categorie", schema: CategorieSchema }]),
     PlayersModule,
-    CategoriesModule,
   ],
   controllers: [CategoriesController],
   providers: [CategoriesService],
+  exports: [CategoriesService],
 })
 export class CategoriesModule {}

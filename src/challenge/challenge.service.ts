@@ -2,13 +2,17 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { CategoriesService } from "src/categories/categories.service";
 import { PlayersService } from "src/players/players.service";
+import { AtributeChallengeGameDto } from "./dtos/atribute-challenge-game.dto";
 import { CreateChallengeDto } from "./dtos/create-challenge.dto";
+import { UpdateChallengeDto } from "./dtos/update-challenge.dto";
 import { ChallengeStatus } from "./interfaces/challenge-status.enum";
 import { Challenge, Game } from "./interfaces/challenge.interface";
 
@@ -81,5 +85,143 @@ export class ChallengeService {
     createdChallenge.status = ChallengeStatus.PENDING;
     this.logger.log(`createdChallenge: ${JSON.stringify(createdChallenge)}`);
     return await createdChallenge.save();
+  }
+
+  async consultAllChallenges(): Promise<Array<Challenge>> {
+    return await this.challengeModel
+      .find()
+      .populate("solicit")
+      .populate("players")
+      .populate("game")
+      .exec();
+  }
+
+  async consultChallengesOfPlayer(id: any): Promise<Array<Challenge>> {
+    const players = await this.PlayersService.consultAllPlayers();
+
+    const playerFilter = players.filter((player) => player.id == id);
+
+    if (playerFilter.length == 0) {
+      throw new BadRequestException(`this id ${id} is not a player!`);
+    }
+
+    return await this.challengeModel
+      .find()
+      .where("players")
+      .in(id)
+      .populate("solicit")
+      .populate("players")
+      .populate("game")
+      .exec();
+  }
+
+  async updateChallenge(
+    id: string,
+    updateChallengeDto: UpdateChallengeDto
+  ): Promise<void> {
+    const findChallenge = await this.challengeModel.findById(id).exec();
+
+    if (!findChallenge) {
+      throw new NotFoundException(`Challenge ${id} not registred!`);
+    }
+
+    /*
+     Atualizaremos a data da resposta quando o status do desafio vier preenchido 
+     */
+    if (updateChallengeDto.status) {
+      findChallenge.dateResponce = new Date();
+    }
+    findChallenge.status = updateChallengeDto.status;
+    findChallenge.dateChallenge = updateChallengeDto.dateChallenge;
+
+    await this.challengeModel
+      .findOneAndUpdate({ id }, { $set: findChallenge })
+      .exec();
+  }
+
+  async atributeChallengeGame(
+    id: string,
+    atributeChallengeGameDto: AtributeChallengeGameDto
+  ): Promise<void> {
+    const findChallenge = await this.challengeModel.findById(id).exec();
+
+    if (!findChallenge) {
+      throw new BadRequestException(`Challenge ${id} not registred!`);
+    }
+
+    /*
+     Verificar se o jogador vencedor faz parte do desafio
+     */
+    const playerFilter = findChallenge.Players.filter(
+      (player) => player.id == atributeChallengeGameDto.def
+    );
+
+    this.logger.log(`findChallenge: ${findChallenge}`);
+    this.logger.log(`playerFilter: ${playerFilter}`);
+
+    if (playerFilter.length == 0) {
+      throw new BadRequestException(
+        `this winner player is not found in the game!`
+      );
+    }
+
+    /*
+     Primeiro vamos criar e persistir o objeto partida
+     */
+    const createGame = new this.gameModel(atributeChallengeGameDto);
+
+    /*
+    Atribuir ao objeto partida a categoria recuperada no desafio
+    */
+    createGame.categorie = findChallenge.categorie;
+
+    /*
+    Atribuir ao objeto partida os jogadores que fizeram parte do desafio
+    */
+    createGame.players = findChallenge.Players;
+
+    const result = await createGame.save();
+
+    /*
+     Quando uma partida for registrada por um usuário, mudaremos o 
+     status do desafio para realizado
+     */
+    findChallenge.status = ChallengeStatus.ACCOMPLISHED;
+
+    /*  
+     Recuperamos o ID da partida e atribuimos ao desafio
+     */
+    findChallenge.game = result.id;
+
+    try {
+      await this.challengeModel
+        .findOneAndUpdate({ id }, { $set: findChallenge })
+        .exec();
+    } catch (error) {
+      /*
+         Se a atualização do desafio falhar excluímos a partida 
+         gravada anteriormente
+         */
+      await this.gameModel.deleteOne({ id: result.id }).exec();
+      throw new InternalServerErrorException();
+    }
+  }
+
+  async deleteChallenge(id: string): Promise<void> {
+    const findChallenge = await this.challengeModel.findById(id).exec();
+
+    if (!findChallenge) {
+      throw new BadRequestException(`Challenge ${id} not registered!`);
+    }
+
+    /*
+     Realizaremos a deleção lógica do desafio, modificando seu status para
+     CANCELADO
+     */
+    findChallenge.status = ChallengeStatus.CANCELLED;
+
+    await this.challengeModel
+      .findOneAndUpdate({ id }, { $set: findChallenge })
+      .exec();
   }
 }
